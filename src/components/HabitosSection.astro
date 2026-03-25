@@ -1,0 +1,303 @@
+---
+---
+
+<section id="habitos" class="habitos-section section">
+  <div class="container">
+    <h2>📝 Mis Hábitos</h2>
+
+    <div class="habitos-form">
+      <div class="form-group">
+        <input 
+          type="text" 
+          id="habit-input" 
+          placeholder="Agregar nuevo hábito..." 
+          aria-label="Nuevo hábito"
+        >
+      </div>
+      <button id="add-habit-btn" class="btn-primary">Agregar</button>
+    </div>
+
+    <div id="habits-list" class="habits-list">
+      <!-- Se llenará dinámicamente -->
+    </div>
+
+    <div id="empty-state" class="empty-state">
+      <p>No tienes hábitos registrados. ¡Crea el primero! 🌱</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  interface Habit {
+    id: string;
+    name: string;
+    completed: boolean;
+    createdAt: Date;
+    streak: number;
+  }
+
+  const habitInput = document.getElementById('habit-input');
+  const addHabitBtn = document.getElementById('add-habit-btn');
+  const habitsList = document.getElementById('habits-list');
+  const emptyState = document.getElementById('empty-state');
+
+  // Cargar hábitos del localStorage
+  function loadHabits(): Habit[] {
+    const stored = localStorage.getItem('habits');
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  // Guardar hábitos en localStorage
+  function saveHabits(habits: Habit[]) {
+    localStorage.setItem('habits', JSON.stringify(habits));
+  }
+
+  // Renderizar lista de hábitos
+  function renderHabits() {
+    const habits = loadHabits();
+    habitsList.innerHTML = '';
+
+    if (habits.length === 0) {
+      emptyState.style.display = 'block';
+    } else {
+      emptyState.style.display = 'none';
+
+      habits.forEach((habit) => {
+        const habitEl = document.createElement('div');
+        habitEl.className = 'habit-item animate-fade-in';
+        if (habit.completed) habitEl.classList.add('completed');
+
+        habitEl.innerHTML = `
+          <div class="habit-content">
+            <input 
+              type="checkbox" 
+              class="habit-checkbox" 
+              ${habit.completed ? 'checked' : ''} 
+              data-id="${habit.id}"
+              aria-label="Completar ${habit.name}"
+            >
+            <div class="habit-info">
+              <h4>${habit.name}</h4>
+              <span class="streak">🔥 Racha: ${habit.streak} días</span>
+            </div>
+          </div>
+          <button class="delete-btn" data-id="${habit.id}" title="Eliminar hábito">
+            ✕
+          </button>
+        `;
+
+        habitsList.appendChild(habitEl);
+      });
+
+      // Event listeners para checkboxes
+      document.querySelectorAll('.habit-checkbox').forEach((checkbox) => {
+        checkbox.addEventListener('change', (e) => {
+          const id = (e.target as HTMLInputElement).dataset.id;
+          toggleHabit(id);
+        });
+      });
+
+      // Event listeners para botones de eliminar
+      document.querySelectorAll('.delete-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const id = (e.target as HTMLButtonElement).dataset.id;
+          deleteHabit(id);
+        });
+      });
+    }
+  }
+
+  // Agregar nuevo hábito
+  function addHabit() {
+    const name = habitInput.value.trim();
+    if (!name) return;
+
+    const habits = loadHabits();
+    const newHabit: Habit = {
+      id: Date.now().toString(),
+      name,
+      completed: false,
+      createdAt: new Date(),
+      streak: 0
+    };
+
+    habits.push(newHabit);
+    saveHabits(habits);
+    habitInput.value = '';
+    renderHabits();
+  }
+
+  // Completar/descompletar hábito
+  function toggleHabit(id: string) {
+    const habits = loadHabits();
+    const habit = habits.find(h => h.id === id);
+    if (habit) {
+      habit.completed = !habit.completed;
+      if (habit.completed) {
+        habit.streak += 1;
+      } else {
+        habit.streak = Math.max(0, habit.streak - 1);
+      }
+      saveHabits(habits);
+      renderHabits();
+    }
+  }
+
+  // Eliminar hábito
+  function deleteHabit(id: string) {
+    if (confirm('¿Estás seguro de que deseas eliminar este hábito?')) {
+      const habits = loadHabits().filter(h => h.id !== id);
+      saveHabits(habits);
+      renderHabits();
+    }
+  }
+
+  // Event listeners
+  addHabitBtn.addEventListener('click', addHabit);
+  habitInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      addHabit();
+    }
+  });
+
+  // Renderizar inicial
+  renderHabits();
+</script>
+
+<style scoped>
+  .section {
+    padding: var(--spacing-2xl) 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .section h2 {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .habitos-form {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-2xl);
+    flex-wrap: wrap;
+  }
+
+  .form-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .form-group input {
+    width: 100%;
+  }
+
+  .habitos-form button {
+    min-width: 120px;
+  }
+
+  .habits-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .habit-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .habit-item:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .habit-item.completed {
+    opacity: 0.7;
+  }
+
+  .habit-item.completed .habit-info h4 {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+  }
+
+  .habit-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: 1;
+  }
+
+  .habit-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+    accent-color: var(--color-success);
+  }
+
+  .habit-info h4 {
+    margin: 0;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .streak {
+    font-size: 0.875rem;
+    color: var(--color-warning);
+    font-weight: 600;
+  }
+
+  .delete-btn {
+    background-color: transparent;
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .delete-btn:hover {
+    background-color: var(--color-danger);
+    color: white;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 768px) {
+    .section {
+      padding: var(--spacing-xl) 0;
+    }
+
+    .habitos-form {
+      flex-direction: column;
+    }
+
+    .habitos-form button {
+      width: 100%;
+    }
+
+    .habit-item {
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+    }
+
+    .habit-content {
+      flex: 1 1 100%;
+    }
+
+    .delete-btn {
+      flex-shrink: 0;
+    }
+  }
+</style>

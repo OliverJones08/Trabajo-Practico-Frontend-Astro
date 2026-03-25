@@ -1,0 +1,93 @@
+---
+interface Props {
+  items: Array<{
+    label: string;
+    value: number;
+    color?: string;
+  }>;
+  title: string;
+}
+
+const { items, title } = Astro.props;
+
+// Calcular total para porcentajes
+const total = items.reduce((sum, item) => sum + item.value, 0);
+
+const defaultColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
+---
+
+<div class="chart-container">
+  <h3>{title}</h3>
+  <div class="chart">
+    {items.map((item, index) => {
+      const percentage = (item.value / total) * 100;
+      const color = item.color || defaultColors[index % defaultColors.length];
+      return (
+        <div class="bar-wrapper" key={index}>
+          <div class="bar" style={`
+            width: ${percentage}%;
+            background-color: ${color};
+          `}></div>
+          <span class="label">{item.label}</span>
+          <span class="value">{item.value} ({percentage.toFixed(0)}%)</span>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+<style scoped>
+  .chart-container {
+    background-color: var(--bg-secondary);
+    border-radius: 1rem;
+    padding: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+  }
+
+  .chart-container h3 {
+    margin-top: 0;
+  }
+
+  .chart {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  .bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .bar {
+    height: 2rem;
+    border-radius: 0.5rem;
+    min-width: 10%;
+    transition: width 0.5s ease;
+  }
+
+  .bar:hover {
+    filter: brightness(1.1);
+  }
+
+  .label {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .value {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+  }
+
+  @media (max-width: 768px) {
+    .chart-container {
+      padding: var(--spacing-md);
+    }
+
+    .bar {
+      height: 1.5rem;
+    }
+  }
+</style>

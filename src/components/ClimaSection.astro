@@ -1,0 +1,305 @@
+---
+---
+
+<section id="clima" class="clima-section section">
+  <div class="container">
+    <h2>🌤️ Clima Actual</h2>
+    
+    <div class="clima-search">
+      <input 
+        type="text" 
+        id="city-input" 
+        placeholder="Buscar ciudad..." 
+        aria-label="Buscar ciudad"
+      >
+      <button id="search-btn" class="btn-primary">Buscar</button>
+    </div>
+
+    <div id="clima-content" class="clima-grid">
+      <!-- Cargará dinámicamente -->
+    </div>
+
+    <div id="loading" class="loading" style="display: none;">
+      <p>Cargando datos...</p>
+    </div>
+
+    <div id="error" class="error-message" style="display: none;"></div>
+  </div>
+</section>
+
+<script>
+  const API_KEY = '84c0b0c06e2cdab82d8fa62d098fffe0'; // Free tier key
+  const DEFAULT_CITY = 'Buenos Aires';
+
+  const searchBtn = document.getElementById('search-btn');
+  const cityInput = document.getElementById('city-input');
+  const climaContent = document.getElementById('clima-content');
+  const loading = document.getElementById('loading');
+  const errorDiv = document.getElementById('error');
+
+  async function getWeather(city = DEFAULT_CITY) {
+    loading.style.display = 'block';
+    errorDiv.style.display = 'none';
+    climaContent.innerHTML = '';
+
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${API_KEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Ciudad no encontrada');
+      }
+
+      const data = await response.json();
+      
+      // Formatear fecha
+      const date = new Date().toLocaleDateString('es-AR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      // Mapeo de iconos
+      const weatherIcons = {
+        'Clear': '☀️',
+        'Clouds': '☁️',
+        'Rain': '🌧️',
+        'Drizzle': '🌦️',
+        'Thunderstorm': '⛈️',
+        'Snow': '❄️',
+        'Mist': '🌫️'
+      };
+
+      const icon = weatherIcons[data.weather[0].main] || '🌤️';
+
+      climaContent.innerHTML = `
+        <div class="weather-main animate-fade-in">
+          <div class="weather-header">
+            <h3>${data.name}, ${data.sys.country}</h3>
+            <p>${date}</p>
+          </div>
+          <div class="weather-display">
+            <div class="weather-temp">
+              <span class="icon">${icon}</span>
+              <span class="temp">${Math.round(data.main.temp)}°C</span>
+            </div>
+            <div class="weather-description">
+              <p>${data.weather[0].description}</p>
+              <p>Sensación térmica: ${Math.round(data.main.feels_like)}°C</p>
+            </div>
+          </div>
+          <div class="weather-details">
+            <div class="detail">
+              <span>💧 Humedad</span>
+              <span>${data.main.humidity}%</span>
+            </div>
+            <div class="detail">
+              <span>💨 Viento</span>
+              <span>${data.wind.speed} m/s</span>
+            </div>
+            <div class="detail">
+              <span>🌡️ Presión</span>
+              <span>${data.main.pressure} hPa</span>
+            </div>
+            <div class="detail">
+              <span>👁️ Visibilidad</span>
+              <span>${(data.visibility / 1000).toFixed(1)} km</span>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      errorDiv.textContent = `Error: ${error.message}. Por favor, intenta con otra ciudad.`;
+      errorDiv.style.display = 'block';
+    } finally {
+      loading.style.display = 'none';
+    }
+  }
+
+  // Event listeners
+  searchBtn.addEventListener('click', () => {
+    const city = cityInput.value.trim();
+    if (city) {
+      getWeather(city);
+    }
+  });
+
+  cityInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const city = cityInput.value.trim();
+      if (city) {
+        getWeather(city);
+      }
+    }
+  });
+
+  // Cargar clima por defecto al iniciar
+  getWeather();
+</script>
+
+<style scoped>
+  .section {
+    padding: var(--spacing-2xl) 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .section h2 {
+    margin-bottom: var(--spacing-xl);
+    font-size: 2rem;
+  }
+
+  .clima-search {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-2xl);
+    flex-wrap: wrap;
+  }
+
+  .clima-search input {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .clima-search button {
+    min-width: 120px;
+  }
+
+  .clima-grid {
+    display: grid;
+    gap: var(--spacing-lg);
+  }
+
+  .weather-main {
+    background-color: var(--bg-secondary);
+    border-radius: 1rem;
+    padding: var(--spacing-xl);
+    border: 1px solid var(--border-color);
+  }
+
+  .weather-header h3 {
+    margin: 0;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .weather-header p {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+  }
+
+  .weather-display {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    margin: var(--spacing-lg) 0;
+    padding: var(--spacing-lg) 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .weather-temp {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .icon {
+    font-size: 4rem;
+  }
+
+  .temp {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .weather-description {
+    flex: 1;
+  }
+
+  .weather-description p {
+    margin: 0;
+    font-size: 1.1rem;
+    text-transform: capitalize;
+  }
+
+  .weather-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+
+  .detail {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    text-align: center;
+  }
+
+  .detail span:first-child {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .detail span:last-child {
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--color-primary);
+  }
+
+  .loading {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--text-secondary);
+  }
+
+  .error-message {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--color-danger);
+    border-radius: 0.5rem;
+    padding: var(--spacing-lg);
+    color: var(--color-danger);
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .section {
+      padding: var(--spacing-xl) 0;
+    }
+
+    .climate-search {
+      flex-direction: column;
+    }
+
+    .climate-search input {
+      width: 100%;
+    }
+
+    .climate-search button {
+      width: 100%;
+    }
+
+    .weather-display {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .icon {
+      font-size: 3rem;
+    }
+
+    .temp {
+      font-size: 2rem;
+    }
+
+    .weather-details {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

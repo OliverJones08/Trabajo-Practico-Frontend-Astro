@@ -1,0 +1,100 @@
+---
+interface Props {
+  title: string;
+  icon?: string;
+  value?: string | number;
+  subtitle?: string;
+  accentColor?: string;
+}
+
+const { title, icon, value, subtitle, accentColor = '#6366f1' } = Astro.props;
+---
+
+<div class="card" style={`--accent-color: ${accentColor}`}>
+  <div class="card-header">
+    {icon && <span class="card-icon">{icon}</span>}
+    <h3>{title}</h3>
+  </div>
+  <div class="card-content">
+    <slot />
+  </div>
+  {value && (
+    <div class="card-value">
+      <span class="value">{value}</span>
+      {subtitle && <span class="subtitle">{subtitle}</span>}
+    </div>
+  )}
+</div>
+
+<style scoped>
+  .card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: var(--spacing-lg);
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--accent-color);
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .card-header h3 {
+    margin: 0;
+  }
+
+  .card-content {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .card-value {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .subtitle {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+  }
+
+  @media (max-width: 768px) {
+    .card {
+      padding: var(--spacing-md);
+    }
+
+    .card-header {
+      gap: var(--spacing-sm);
+    }
+
+    .card-header h3 {
+      font-size: 1.25rem;
+    }
+
+    .value {
+      font-size: 1.5rem;
+    }
+  }
+</style>

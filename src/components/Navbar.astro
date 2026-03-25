@@ -1,0 +1,145 @@
+---
+interface Props {
+  isDark?: boolean;
+}
+
+const { isDark = false } = Astro.props;
+---
+
+<header class={`navbar ${isDark ? 'dark' : ''}`}>
+  <div class="container">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="logo-icon">📊</span>
+        <h1>Dashboard</h1>
+      </div>
+      <nav class="nav-links">
+        <a href="#clima">Clima</a>
+        <a href="#habitos">Hábitos</a>
+        <a href="#estadisticas">Estadísticas</a>
+        <button id="theme-toggle" class="theme-btn" title="Toggle dark mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Tema oscuro
+  const themeToggle = document.getElementById('theme-toggle');
+  const html = document.documentElement;
+
+  // Cargar tema guardado
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  if (savedTheme === 'dark') {
+    html.setAttribute('data-theme', 'dark');
+    const icon = themeToggle?.querySelector('.theme-icon');
+    if (icon) icon.textContent = '☀️';
+  }
+
+  themeToggle?.addEventListener('click', () => {
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    const icon = themeToggle.querySelector('.theme-icon');
+    icon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+  });
+</script>
+
+<style scoped>
+  header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background-color 0.3s ease;
+  }
+
+  .navbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    cursor: pointer;
+  }
+
+  .logo-icon {
+    font-size: 2rem;
+  }
+
+  .logo h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+
+  .nav-links a {
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .nav-links a:hover {
+    color: var(--color-primary);
+  }
+
+  .theme-btn {
+    background-color: transparent;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .theme-btn:hover {
+    border-color: var(--color-primary);
+    background-color: var(--bg-primary);
+  }
+
+  .theme-icon {
+    font-size: 1.25rem;
+  }
+
+  @media (max-width: 768px) {
+    .navbar-content {
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+    }
+
+    .logo h1 {
+      display: none;
+    }
+
+    .nav-links {
+      gap: var(--spacing-md);
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+    }
+  }
+</style>
