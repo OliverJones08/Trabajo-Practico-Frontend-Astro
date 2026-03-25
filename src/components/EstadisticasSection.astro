@@ -191,17 +191,23 @@ import BarChart from './BarChart.astro';
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
+    min-height: 2.5rem;
   }
 
   .bar-label {
-    min-width: 80px;
+    min-width: 100px;
+    max-width: 120px;
     font-weight: 500;
     color: var(--text-primary);
     font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .bar-wrapper {
     flex: 1;
+    min-width: 100px;
     height: 2rem;
     background-color: var(--bg-tertiary);
     border-radius: 0.5rem;
@@ -212,13 +218,15 @@ import BarChart from './BarChart.astro';
     height: 100%;
     border-radius: 0.5rem;
     transition: width 0.5s ease;
+    min-width: 2px;
   }
 
   .bar-value {
-    min-width: 30px;
+    min-width: 40px;
     text-align: right;
     font-weight: 600;
     color: var(--text-primary);
+    font-size: 0.9rem;
   }
 
   @media (max-width: 768px) {
@@ -245,11 +253,22 @@ import BarChart from './BarChart.astro';
 
     .bar-item {
       gap: var(--spacing-sm);
+      min-height: 2.5rem;
     }
 
     .bar-label {
-      min-width: 60px;
+      min-width: 70px;
+      max-width: 80px;
       font-size: 0.75rem;
+    }
+
+    .bar-wrapper {
+      min-width: 80px;
+    }
+
+    .bar-value {
+      min-width: 35px;
+      font-size: 0.85rem;
     }
   }
 </style>
