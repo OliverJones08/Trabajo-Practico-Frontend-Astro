@@ -1,0 +1,16 @@
+{
+  "name": "dashboard-clima-habitos",
+  "version": "1.0.0",
+  "description": "Dashboard de clima y hábitos diarios",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^4.1.0"
+  },
+  "devDependencies": {}
+}

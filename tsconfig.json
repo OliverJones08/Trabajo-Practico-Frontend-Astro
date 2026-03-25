@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "jsxImportSource": "astro/jsx"
+  },
+  "extends": "astro/tsconfigs/strict"
+}
