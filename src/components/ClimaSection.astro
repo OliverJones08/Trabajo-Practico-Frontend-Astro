@@ -55,22 +55,30 @@
 
       const location = geoData.results[0];
       const weatherResponse = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,weather_code,temperature_apparent_mean,relative_humidity_2m,pressure_msl,visibility&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,pressure_msl,visibility&timezone=auto`
       );
 
       const weatherData = await weatherResponse.json();
+      
+      if (!weatherData.current) {
+        throw new Error('No se pudo obtener datos de clima');
+      }
+
       const data = {
         name: location.name,
         sys: { country: location.country_code },
         main: {
-          temp: weatherData.current.temperature_2m,
-          feels_like: weatherData.current.temperature_apparent_mean,
-          humidity: weatherData.current.relative_humidity_2m,
-          pressure: weatherData.current.pressure_msl
+          temp: weatherData.current.temperature_2m || 0,
+          feels_like: weatherData.current.apparent_temperature || weatherData.current.temperature_2m || 0,
+          humidity: weatherData.current.relative_humidity_2m || 0,
+          pressure: weatherData.current.pressure_msl || 0
         },
         wind: { speed: 0 },
-        visibility: weatherData.current.visibility,
-        weather: [{ main: getWeatherType(weatherData.current.weather_code), description: getWeatherDescription(weatherData.current.weather_code) }]
+        visibility: weatherData.current.visibility || 10000,
+        weather: [{ 
+          main: getWeatherType(weatherData.current.weather_code || 0), 
+          description: getWeatherDescription(weatherData.current.weather_code || 0) 
+        }]
       };
       
       // Mapeo de códigos WMO a iconos
