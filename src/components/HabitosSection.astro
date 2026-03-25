@@ -133,11 +133,11 @@
     const habit = habits.find(h => h.id === id);
     if (habit) {
       habit.completed = !habit.completed;
+      // La racha solo se incrementa cuando completas (es acumulativa)
       if (habit.completed) {
         habit.streak += 1;
-      } else {
-        habit.streak = Math.max(0, habit.streak - 1);
       }
+      // No disminuye la racha al descompletar
       saveHabits(habits);
       renderHabits();
     }
