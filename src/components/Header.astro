@@ -1,0 +1,136 @@
+---
+---
+
+<header class="header">
+  <div class="container header-inner">
+    <a href="#hero" class="logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="28" height="28" rx="8" fill="var(--accent)" />
+        <path d="M8 14h12M14 8v12" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
+      </svg>
+      <span>Dashboard</span>
+    </a>
+
+    <nav class="nav" aria-label="Navegación principal">
+      <a href="#clima" class="nav-link">Clima</a>
+      <a href="#tareas" class="nav-link">Tareas</a>
+      <a href="#pomodoro" class="nav-link">Pomodoro</a>
+    </nav>
+
+    <button
+      id="theme-toggle"
+      class="theme-btn"
+      aria-label="Cambiar tema"
+      title="Cambiar entre modo claro y oscuro"
+    >
+      <span class="theme-icon theme-icon-sun" aria-hidden="true">☀️</span>
+      <span class="theme-icon theme-icon-moon" aria-hidden="true">🌙</span>
+    </button>
+  </div>
+</header>
+
+<script>
+  const toggleBtn = document.getElementById('theme-toggle');
+  const html = document.documentElement;
+
+  function applyTheme(theme: string) {
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
+
+  // Init from localStorage
+  const saved = localStorage.getItem('theme') || 'light';
+  applyTheme(saved);
+
+  toggleBtn?.addEventListener('click', () => {
+    const current = html.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: background var(--transition), border-color var(--transition);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    gap: 1rem;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .logo:hover {
+    color: var(--accent);
+  }
+
+  .nav {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .nav-link {
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all var(--transition);
+  }
+
+  .nav-link:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .theme-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    font-size: 1.1rem;
+    transition: all var(--transition);
+    flex-shrink: 0;
+  }
+
+  .theme-btn:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    transform: rotate(20deg);
+  }
+
+  /* Show sun in dark mode, moon in light mode */
+  [data-theme="light"] .theme-icon-sun { display: none; }
+  [data-theme="light"] .theme-icon-moon { display: inline; }
+  [data-theme="dark"] .theme-icon-sun { display: inline; }
+  [data-theme="dark"] .theme-icon-moon { display: none; }
+
+  @media (max-width: 600px) {
+    .nav {
+      display: none;
+    }
+  }
+</style>

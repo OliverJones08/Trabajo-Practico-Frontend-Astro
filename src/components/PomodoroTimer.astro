@@ -1,0 +1,411 @@
+---
+---
+
+<section id="pomodoro" class="section">
+  <div class="container">
+    <h2 class="section-title animate-fade-in animate-delay-1">🍅 Temporizador Pomodoro</h2>
+    <p class="section-subtitle animate-fade-in animate-delay-2">
+      Técnica de productividad: 25 min de trabajo, 5 min de descanso.
+    </p>
+
+    <div class="pomodoro-wrapper animate-fade-in animate-delay-3">
+      <!-- Mode selector -->
+      <div class="mode-tabs" role="tablist" aria-label="Modos del temporizador">
+        <button class="mode-tab active" data-mode="work" data-minutes="25" role="tab" aria-selected="true">
+          🍅 Trabajo
+        </button>
+        <button class="mode-tab" data-mode="short" data-minutes="5" role="tab" aria-selected="false">
+          ☕ Descanso corto
+        </button>
+        <button class="mode-tab" data-mode="long" data-minutes="15" role="tab" aria-selected="false">
+          🌙 Descanso largo
+        </button>
+      </div>
+
+      <!-- Timer card -->
+      <div class="card timer-card">
+        <!-- Circular SVG progress -->
+        <div class="timer-ring-wrapper" aria-hidden="true">
+          <svg class="timer-svg" viewBox="0 0 200 200">
+            <circle class="ring-bg" cx="100" cy="100" r="88" />
+            <circle id="ring-progress" class="ring-progress" cx="100" cy="100" r="88" />
+          </svg>
+          <div class="timer-face">
+            <span id="timer-display" class="timer-display">25:00</span>
+            <span id="timer-mode-label" class="timer-mode-label">Trabajo</span>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="timer-controls">
+          <button id="timer-start" class="btn btn-primary timer-btn">▶ Iniciar</button>
+          <button id="timer-reset" class="btn btn-ghost timer-btn">↺ Reiniciar</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="timer-stats">
+          <div class="stat">
+            <span class="stat-value" id="stat-pomodoros">0</span>
+            <span class="stat-label">Pomodoros</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <span class="stat-value" id="stat-minutes">0</span>
+            <span class="stat-label">Min enfocado</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="card tips-card">
+        <h3 class="tips-title">💡 Cómo funciona</h3>
+        <ol class="tips-list">
+          <li>Elegí una tarea a realizar.</li>
+          <li>Iniciá el temporizador (25 minutos).</li>
+          <li>Trabajá hasta que suene.</li>
+          <li>Tomá un descanso corto (5 min).</li>
+          <li>Cada 4 pomodoros, tomá un descanso largo.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const CIRCUMFERENCE = 2 * Math.PI * 88; // r = 88
+
+  let totalSeconds = 25 * 60;
+  let remainingSeconds = totalSeconds;
+  let running = false;
+  let intervalId: ReturnType<typeof setInterval> | null = null;
+  let completedPomodoros = 0;
+  let totalFocusedSeconds = 0;
+
+  const displayEl = document.getElementById('timer-display')!;
+  const modeLabelEl = document.getElementById('timer-mode-label')!;
+  const startBtn = document.getElementById('timer-start')!;
+  const resetBtn = document.getElementById('timer-reset')!;
+  const ringEl = document.getElementById('ring-progress') as SVGCircleElement;
+  const statPomodoros = document.getElementById('stat-pomodoros')!;
+  const statMinutes = document.getElementById('stat-minutes')!;
+
+  // Setup ring
+  ringEl.style.strokeDasharray = String(CIRCUMFERENCE);
+  ringEl.style.strokeDashoffset = '0';
+
+  function formatTime(secs: number): string {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function updateRing() {
+    const progress = remainingSeconds / totalSeconds;
+    const offset = CIRCUMFERENCE * (1 - progress);
+    ringEl.style.strokeDashoffset = String(offset);
+  }
+
+  function updateDisplay() {
+    displayEl.textContent = formatTime(remainingSeconds);
+    updateRing();
+  }
+
+  function tick() {
+    if (remainingSeconds <= 0) {
+      clearInterval(intervalId!);
+      intervalId = null;
+      running = false;
+      startBtn.textContent = '▶ Iniciar';
+
+      // Notification
+      if (Notification.permission === 'granted') {
+        try {
+          new Notification('⏰ Tiempo completado!', {
+            body: modeLabelEl.textContent ?? '',
+          });
+        } catch {
+          // Notifications not supported or blocked in this context
+        }
+      }
+
+      // Update stats if it was a work session
+      const activeMode = document.querySelector('.mode-tab.active') as HTMLElement;
+      if (activeMode?.dataset.mode === 'work') {
+        completedPomodoros += 1;
+        totalFocusedSeconds += totalSeconds;
+        statPomodoros.textContent = String(completedPomodoros);
+        statMinutes.textContent = String(Math.round(totalFocusedSeconds / 60));
+      }
+      return;
+    }
+    remainingSeconds -= 1;
+    updateDisplay();
+  }
+
+  startBtn.addEventListener('click', () => {
+    if (running) {
+      clearInterval(intervalId!);
+      intervalId = null;
+      running = false;
+      startBtn.textContent = '▶ Continuar';
+    } else {
+      // Request notification permission on first start
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+      intervalId = setInterval(tick, 1000);
+      running = true;
+      startBtn.textContent = '⏸ Pausar';
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    if (intervalId) clearInterval(intervalId);
+    intervalId = null;
+    running = false;
+    remainingSeconds = totalSeconds;
+    startBtn.textContent = '▶ Iniciar';
+    updateDisplay();
+  });
+
+  document.querySelectorAll('.mode-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.mode-tab').forEach((t) => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+
+      if (intervalId) clearInterval(intervalId);
+      intervalId = null;
+      running = false;
+      startBtn.textContent = '▶ Iniciar';
+
+      const minutes = parseInt((tab as HTMLElement).dataset.minutes ?? '25', 10);
+      const label =
+        (tab as HTMLElement).dataset.mode === 'work'
+          ? 'Trabajo'
+          : (tab as HTMLElement).dataset.mode === 'short'
+          ? 'Descanso corto'
+          : 'Descanso largo';
+
+      totalSeconds = minutes * 60;
+      remainingSeconds = totalSeconds;
+      modeLabelEl.textContent = label;
+      updateDisplay();
+    });
+  });
+
+  updateDisplay();
+</script>
+
+<style>
+  .pomodoro-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    grid-template-rows: auto 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    max-width: 800px;
+  }
+
+  .mode-tabs {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .mode-tab {
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition);
+  }
+
+  .mode-tab:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .mode-tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .timer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+
+  /* Circular ring */
+  .timer-ring-wrapper {
+    position: relative;
+    width: 200px;
+    height: 200px;
+  }
+
+  .timer-svg {
+    width: 200px;
+    height: 200px;
+    transform: rotate(-90deg);
+  }
+
+  .ring-bg {
+    fill: none;
+    stroke: var(--border-color);
+    stroke-width: 10;
+  }
+
+  .ring-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+  }
+
+  .timer-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+
+  .timer-display {
+    font-size: 2.75rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .timer-mode-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .timer-controls {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .timer-btn {
+    min-width: 130px;
+    justify-content: center;
+  }
+
+  .timer-stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    justify-content: center;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--border-color);
+  }
+
+  .tips-card {
+    align-self: start;
+  }
+
+  .tips-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+
+  .tips-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    counter-reset: tips;
+  }
+
+  .tips-list li {
+    counter-increment: tips;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .tips-list li::before {
+    content: counter(tips);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  @media (max-width: 700px) {
+    .pomodoro-wrapper {
+      grid-template-columns: 1fr;
+    }
+
+    .timer-card {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .timer-display {
+      font-size: 2.25rem;
+    }
+
+    .timer-btn {
+      min-width: 110px;
+    }
+  }
+</style>
