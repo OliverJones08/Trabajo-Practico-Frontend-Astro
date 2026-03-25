@@ -1,0 +1,51 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Dashboard de Clima y Hábitos' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📊</text></svg>" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="color-scheme" content="light dark" />
+  </head>
+  <body>
+    <Navbar />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // Smooth scroll behavior already in global CSS
+      // But we can add more interactivity here if needed
+      
+      // Elemento activo en navegación
+      document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', function() {
+          document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  main {
+    min-height: calc(100vh - 200px);
+  }
+</style>
