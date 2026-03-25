@@ -28,9 +28,6 @@
 </section>
 
 <script>
-  // IMPORTANTE: Reemplaza con tu API key de https://openweathermap.org/api
-  // Es gratis, solo necesitas registrarte
-  const API_KEY = '4d8fb5b93d4af21ebd66b6ab4fc1e3a3'; // API key de demostración
   const DEFAULT_CITY = 'Buenos Aires';
 
   const searchBtn = document.getElementById('search-btn');
@@ -45,33 +42,46 @@
     climaContent.innerHTML = '';
 
     try {
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${API_KEY}`
+      // Usar Open-Meteo API (sin API key requerida)
+      const geoResponse = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`
       );
 
-      if (!response.ok) {
+      const geoData = await geoResponse.json();
+
+      if (!geoData.results || geoData.results.length === 0) {
         throw new Error('Ciudad no encontrada');
       }
 
-      const data = await response.json();
-      
-      // Formatear fecha
-      const date = new Date().toLocaleDateString('es-AR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
+      const location = geoData.results[0];
+      const weatherResponse = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,weather_code,temperature_apparent_mean,relative_humidity_2m,pressure_msl,visibility&timezone=auto`
+      );
 
-      // Mapeo de iconos
+      const weatherData = await weatherResponse.json();
+      const data = {
+        name: location.name,
+        sys: { country: location.country_code },
+        main: {
+          temp: weatherData.current.temperature_2m,
+          feels_like: weatherData.current.temperature_apparent_mean,
+          humidity: weatherData.current.relative_humidity_2m,
+          pressure: weatherData.current.pressure_msl
+        },
+        wind: { speed: 0 },
+        visibility: weatherData.current.visibility,
+        weather: [{ main: getWeatherType(weatherData.current.weather_code), description: getWeatherDescription(weatherData.current.weather_code) }]
+      };
+      
+      // Mapeo de códigos WMO a iconos
       const weatherIcons = {
         'Clear': '☀️',
-        'Clouds': '☁️',
-        'Rain': '🌧️',
+        'Cloudy': '☁️',
+        'Rainy': '🌧️',
         'Drizzle': '🌦️',
         'Thunderstorm': '⛈️',
         'Snow': '❄️',
-        'Mist': '🌫️'
+        'Fog': '🌫️'
       };
 
       const icon = weatherIcons[data.weather[0].main] || '🌤️';
@@ -80,7 +90,12 @@
         <div class="weather-main animate-fade-in">
           <div class="weather-header">
             <h3>${data.name}, ${data.sys.country}</h3>
-            <p>${date}</p>
+            <p>${new Date().toLocaleDateString('es-AR', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}</p>
           </div>
           <div class="weather-display">
             <div class="weather-temp">
@@ -98,16 +113,16 @@
               <span>${data.main.humidity}%</span>
             </div>
             <div class="detail">
-              <span>💨 Viento</span>
-              <span>${data.wind.speed} m/s</span>
-            </div>
-            <div class="detail">
               <span>🌡️ Presión</span>
-              <span>${data.main.pressure} hPa</span>
+              <span>${Math.round(data.main.pressure)} hPa</span>
             </div>
             <div class="detail">
               <span>👁️ Visibilidad</span>
               <span>${(data.visibility / 1000).toFixed(1)} km</span>
+            </div>
+            <div class="detail">
+              <span>📍 Coordenadas</span>
+              <span>${data.name}</span>
             </div>
           </div>
         </div>
@@ -118,6 +133,54 @@
     } finally {
       loading.style.display = 'none';
     }
+  }
+
+  // Función para convertir código WMO a descripción legible
+  function getWeatherType(code) {
+    if (code === 0 || code === 1) return 'Clear';
+    if (code === 2) return 'Cloudy';
+    if (code === 3) return 'Cloudy';
+    if (code === 45 || code === 48) return 'Fog';
+    if (code === 51 || code === 53 || code === 55) return 'Drizzle';
+    if (code === 61 || code === 63 || code === 65) return 'Rainy';
+    if (code === 71 || code === 73 || code === 75 || code === 77 || code === 80 || code === 81 || code === 82) return 'Snow';
+    if (code === 80 || code === 81 || code === 82) return 'Rainy';
+    if (code === 85 || code === 86) return 'Snow';
+    if (code === 80 || code === 81 || code === 82) return 'Rainy';
+    if (code >= 80 && code <= 82) return 'Rainy';
+    if (code >= 85 && code <= 86) return 'Snow';
+    if (code >= 90 && code <= 99) return 'Thunderstorm';
+    return 'Cloudy';
+  }
+
+  function getWeatherDescription(code) {
+    const descriptions = {
+      0: 'Cielo despejado',
+      1: 'Principalmente despejado',
+      2: 'Parcialmente nublado',
+      3: 'Nublado',
+      45: 'Niebla',
+      48: 'Niebla',
+      51: 'Llovizna',
+      53: 'Llovizna',
+      55: 'Llovizna densa',
+      61: 'Lluvia',
+      63: 'Lluvia moderada',
+      65: 'Lluvia fuerte',
+      71: 'Nieve',
+      73: 'Nieve',
+      75: 'Nieve fuerte',
+      77: 'Granos de nieve',
+      80: 'Lluvia',
+      81: 'Lluvia fuerte',
+      82: 'Lluvia muy fuerte',
+      85: 'Nieve',
+      86: 'Nieve fuerte',
+      95: 'Tormenta',
+      96: 'Tormenta con granizo',
+      99: 'Tormenta con granizo fuerte'
+    };
+    return descriptions[code] || 'Condición desconocida';
   }
 
   // Event listeners
