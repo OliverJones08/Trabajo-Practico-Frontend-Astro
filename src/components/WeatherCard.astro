@@ -1,0 +1,284 @@
+---
+---
+
+<section id="clima" class="section">
+  <div class="container">
+    <h2 class="section-title animate-fade-in animate-delay-1">🌤️ Clima en Tiempo Real</h2>
+    <p class="section-subtitle animate-fade-in animate-delay-2">
+      Datos meteorológicos actuales desde Open-Meteo (sin API key).
+    </p>
+
+    <div id="weather-container" class="weather-grid">
+      <div class="card weather-main animate-fade-in animate-delay-2">
+        <div id="weather-loading" class="weather-loading">
+          <div class="spinner"></div>
+          <p>Obteniendo ubicación y clima…</p>
+        </div>
+        <div id="weather-content" class="weather-content hidden">
+          <div class="weather-top">
+            <div>
+              <p id="weather-city" class="weather-city">—</p>
+              <p id="weather-desc" class="weather-desc">—</p>
+            </div>
+            <span id="weather-emoji" class="weather-emoji">🌡️</span>
+          </div>
+          <p id="weather-temp" class="weather-temp">—</p>
+        </div>
+        <div id="weather-error" class="weather-error hidden">
+          <span class="weather-error-icon">⚠️</span>
+          <p>No se pudo obtener el clima.<br />Activa la geolocalización en tu navegador.</p>
+        </div>
+      </div>
+
+      <div class="card animate-fade-in animate-delay-3">
+        <h3 class="detail-title">Detalles</h3>
+        <ul id="weather-details" class="detail-list">
+          <li class="detail-item">
+            <span>💧 Humedad</span><span id="wd-humidity" class="detail-value">—</span>
+          </li>
+          <li class="detail-item">
+            <span>💨 Viento</span><span id="wd-wind" class="detail-value">—</span>
+          </li>
+          <li class="detail-item">
+            <span>🌡️ Sensación</span><span id="wd-feels" class="detail-value">—</span>
+          </li>
+          <li class="detail-item">
+            <span>☁️ Nubosidad</span><span id="wd-cloud" class="detail-value">—</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  interface OpenMeteoResponse {
+    current: {
+      temperature_2m: number;
+      apparent_temperature: number;
+      relative_humidity_2m: number;
+      wind_speed_10m: number;
+      cloud_cover: number;
+      weather_code: number;
+    };
+  }
+
+  interface GeoResponse {
+    city?: string;
+    town?: string;
+    village?: string;
+    state?: string;
+    country?: string;
+  }
+
+  function weatherCodeToInfo(code: number): { desc: string; emoji: string } {
+    if (code === 0) return { desc: 'Despejado', emoji: '☀️' };
+    if (code <= 2) return { desc: 'Parcialmente nublado', emoji: '⛅' };
+    if (code === 3) return { desc: 'Nublado', emoji: '☁️' };
+    if (code <= 49) return { desc: 'Niebla', emoji: '🌫️' };
+    if (code <= 59) return { desc: 'Llovizna', emoji: '🌦️' };
+    if (code <= 69) return { desc: 'Lluvia', emoji: '🌧️' };
+    if (code <= 79) return { desc: 'Nieve', emoji: '❄️' };
+    if (code <= 84) return { desc: 'Chubascos', emoji: '🌨️' };
+    if (code <= 94) return { desc: 'Tormenta', emoji: '⛈️' };
+    return { desc: 'Tormenta fuerte', emoji: '🌩️' };
+  }
+
+  async function fetchWeather(lat: number, lon: number) {
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,cloud_cover,weather_code` +
+      `&timezone=auto`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Weather fetch failed with status ${res.status}`);
+    return (await res.json()) as OpenMeteoResponse;
+  }
+
+  async function fetchCityName(lat: number, lon: number): Promise<string> {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+      { headers: { 'User-Agent': 'DashboardPersonalAstro/1.0 (github.com/OliverJones08/Trabajo-Practico-Frontend-Astro)' } }
+    );
+    const data = await res.json();
+    const addr = data.address as GeoResponse;
+    return addr.city ?? addr.town ?? addr.village ?? addr.state ?? 'Ubicación desconocida';
+  }
+
+  async function init() {
+    const loadingEl = document.getElementById('weather-loading')!;
+    const contentEl = document.getElementById('weather-content')!;
+    const errorEl = document.getElementById('weather-error')!;
+
+    if (!navigator.geolocation) {
+      loadingEl.classList.add('hidden');
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lon } = pos.coords;
+          const [weather, city] = await Promise.all([
+            fetchWeather(lat, lon),
+            fetchCityName(lat, lon),
+          ]);
+
+          const cur = weather.current;
+          const { desc, emoji } = weatherCodeToInfo(cur.weather_code);
+
+          document.getElementById('weather-city')!.textContent = city;
+          document.getElementById('weather-desc')!.textContent = desc;
+          document.getElementById('weather-emoji')!.textContent = emoji;
+          document.getElementById('weather-temp')!.textContent = `${Math.round(cur.temperature_2m)}°C`;
+          document.getElementById('wd-humidity')!.textContent = `${cur.relative_humidity_2m}%`;
+          document.getElementById('wd-wind')!.textContent = `${Math.round(cur.wind_speed_10m)} km/h`;
+          document.getElementById('wd-feels')!.textContent = `${Math.round(cur.apparent_temperature)}°C`;
+          document.getElementById('wd-cloud')!.textContent = `${cur.cloud_cover}%`;
+
+          loadingEl.classList.add('hidden');
+          contentEl.classList.remove('hidden');
+        } catch {
+          loadingEl.classList.add('hidden');
+          errorEl.classList.remove('hidden');
+        }
+      },
+      () => {
+        loadingEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+      }
+    );
+  }
+
+  init();
+</script>
+
+<style>
+  .weather-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  .weather-main {
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .weather-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .weather-content {
+    width: 100%;
+  }
+
+  .weather-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .weather-city {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .weather-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.15rem;
+  }
+
+  .weather-emoji {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .weather-temp {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .weather-error {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .weather-error-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .detail-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+
+  .detail-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .detail-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .detail-value {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  @media (max-width: 600px) {
+    .weather-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .weather-temp {
+      font-size: 2.75rem;
+    }
+  }
+</style>

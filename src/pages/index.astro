@@ -1,0 +1,186 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import WeatherCard from '../components/WeatherCard.astro';
+import TaskList from '../components/TaskList.astro';
+import PomodoroTimer from '../components/PomodoroTimer.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="Mi Dashboard Personal | Astro"
+  description="Dashboard personal con clima, lista de tareas y temporizador Pomodoro. Creado con Astro."
+>
+  <Header />
+
+  <main>
+    <!-- ========================
+         HERO SECTION
+         ======================== -->
+    <section id="hero" class="hero-section">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <span class="hero-tag animate-fade-in">✨ Dashboard Personal</span>
+          <h1 class="hero-title animate-fade-in animate-delay-1">
+            Tu espacio de<br />
+            <span class="gradient-text">productividad</span>
+          </h1>
+          <p class="hero-desc animate-fade-in animate-delay-2">
+            Consultá el clima, gestioná tus tareas y potenciá tu concentración con el temporizador Pomodoro. Todo en un solo lugar.
+          </p>
+          <div class="hero-actions animate-fade-in animate-delay-3">
+            <a href="#clima" class="btn btn-primary">🌤️ Ver Clima</a>
+            <a href="#tareas" class="btn btn-ghost">✅ Mis Tareas</a>
+          </div>
+        </div>
+
+        <div class="hero-cards animate-fade-in animate-delay-2" aria-hidden="true">
+          <div class="hc hc-1">
+            <span class="hc-emoji">🍅</span>
+            <span class="hc-label">Pomodoro activo</span>
+            <span class="hc-value">25:00</span>
+          </div>
+          <div class="hc hc-2">
+            <span class="hc-emoji">✅</span>
+            <span class="hc-label">Tareas hoy</span>
+            <span class="hc-value">3 de 5</span>
+          </div>
+          <div class="hc hc-3">
+            <span class="hc-emoji">🌤️</span>
+            <span class="hc-label">Clima local</span>
+            <span class="hc-value">22°C</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================
+         WEATHER SECTION
+         ======================== -->
+    <WeatherCard />
+
+    <!-- ========================
+         TASKS SECTION
+         ======================== -->
+    <TaskList />
+
+    <!-- ========================
+         POMODORO SECTION
+         ======================== -->
+    <PomodoroTimer />
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ── Hero ── */
+  .hero-section {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--accent-light) 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 5rem 0 4rem;
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.04em;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+
+  .gradient-text {
+    background: linear-gradient(90deg, var(--accent), #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* Hero mini-cards */
+  .hero-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .hc {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition);
+  }
+
+  .hc:hover {
+    transform: translateX(6px);
+  }
+
+  .hc-emoji {
+    font-size: 1.75rem;
+    flex-shrink: 0;
+  }
+
+  .hc-label {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .hc-value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  @media (max-width: 768px) {
+    .hero-section {
+      padding: 3rem 0 2.5rem;
+    }
+
+    .hero-inner {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .hero-cards {
+      display: none;
+    }
+  }
+</style>
