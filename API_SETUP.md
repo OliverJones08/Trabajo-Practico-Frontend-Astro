@@ -22,16 +22,19 @@ Cuando buscas una ciudad y ves: "Error: Ciudad no encontrada", es porque la API 
 ### Paso 3: Configurar el proyecto
 
 Abre el archivo:
+
 ```
 src/components/ClimaSection.astro
 ```
 
 Busca esta línea (aproximadamente línea 31):
+
 ```javascript
 const API_KEY = '4d8fb5b93d4af21ebd66b6ab4fc1e3a3';
 ```
 
 Reemplázala con tu API key:
+
 ```javascript
 const API_KEY = 'tu_api_key_aqui'; // ← Reemplaza con tu API key
 ```
@@ -49,6 +52,7 @@ npm run dev
 ## Nota sobre la racha de hábitos
 
 ✅ **Corregido:** Ahora la racha funciona correctamente:
+
 - Se incrementa **solo** cuando marcas un hábito como completado
 - Se mantiene (no disminuye) cuando desmarques
 - Es acumulativa (como una racha real)

@@ -9,22 +9,26 @@ Proyecto web estático construido con **Astro** que implementa un **Dashboard de
 ## ✅ Requisitos Mínimos Cumplidos
 
 ### 1. **1 página principal** ✓
+
 - Página de inicio (`src/pages/index.astro`)
 - Hero section con llamada a la acción
 - Navegación clara entre secciones
 
 ### 2. **Al menos 3 secciones** ✓
+
 - 🌤️ **Sección de Clima**: Búsqueda de ciudades, datos en tiempo real
 - 📝 **Sección de Hábitos**: Gestor CRUD de hábitos con localStorage
 - 📊 **Sección de Estadísticas**: Gráficos y métricas de hábitos
 
 ### 3. **Responsive básico** ✓
+
 - Breakpoints: Mobile (<768px), Tablet (768px-1199px), Desktop (1200px+)
 - Grid y Flexbox adaptables
 - Media queries en todos los componentes
 - Probado en diferentes tamaños
 
 ### 4. **Comportamiento con JavaScript** ✓
+
 - **Eventos**: Click en botones, Enter en inputs
 - **Manipulación del DOM**: Crear/eliminar elementos dinámicamente
 - **Fetch de API**: Integración con OpenWeatherMap API
@@ -35,6 +39,7 @@ Proyecto web estático construido con **Astro** que implementa un **Dashboard de
 ## 🎁 Características Extras Implementadas
 
 ### ✅ Componentes Reutilizables
+
 - `Card.astro` - Tarjeta versátil con icono y valores
 - `BarChart.astro` - Gráfico de barras interactivo
 - `Navbar.astro` - Navegación responsive con tema toggle
@@ -42,6 +47,7 @@ Proyecto web estático construido con **Astro** que implementa un **Dashboard de
 - `ClimaSection.astro`, `HabitosSection.astro`, `EstadisticasSection.astro` - Secciones principales
 
 ### ✅ Animaciones
+
 - Fade in (entrada suave)
 - Slide in (deslizamiento)
 - Pulse (efecto pulsante)
@@ -49,6 +55,7 @@ Proyecto web estático construido con **Astro** que implementa un **Dashboard de
 - Transformaciones y efectos de elevación
 
 ### ✅ Librerías CSS
+
 - Sistema de diseño con **variables CSS**
 - Colores principales, secundarios y de acento
 - Espaciado consistente
@@ -56,24 +63,28 @@ Proyecto web estático construido con **Astro** que implementa un **Dashboard de
 - Sombras y bordes profesionales
 
 ### ✅ Fetch de API
+
 - **OpenWeatherMap API** para datos de clima
 - Búsqueda de ciudades en tiempo real
 - Mostrar: temperatura, humedad, viento, presión, visibilidad
 - Manejo de errores apropiado
 
 ### ✅ Dark Mode
+
 - Toggle 🌙/☀️ en la navbar
 - Persistencia en localStorage
 - Transiciones smooth entre temas
 - Variables CSS para modo oscuro
 
 ### ✅ HTML Semántico
+
 - Etiquetas: `<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`
 - Atributos `aria-label` para accesibilidad
 - Estructura jerárquica correcta
 - Elementos semánticos en lugar de divs genéricos
 
 ### ✅ CSS Grid y Flexbox
+
 - Grid responsive para estadísticas
 - Flexbox para navegación y componentes
 - Layout adaptable sin media queries complejas
@@ -116,17 +127,20 @@ Documentación:
 ## 🚀 Cómo Ejecutar
 
 ### Instalación
+
 ```bash
 npm install
 ```
 
 ### Desarrollo
+
 ```bash
 npm run dev
 # Abre http://localhost:3000
 ```
 
 ### Producción
+
 ```bash
 npm run build
 npm run preview
@@ -137,6 +151,7 @@ npm run preview
 ## 🔗 Funcionalidades Principales
 
 ### Sección de Clima
+
 - Búsqueda de ciudades
 - Muestra temperatura actual y sensación térmica
 - Datos: humedad, viento, presión, visibilidad
@@ -145,6 +160,7 @@ npm run preview
 - Manejo de errores
 
 ### Gestor de Hábitos
+
 - Agregar nuevos hábitos
 - Marcar como completados/incompletos
 - Sistema de rachas (días consecutivos)
@@ -153,6 +169,7 @@ npm run preview
 - Confirmación antes de eliminar
 
 ### Estadísticas
+
 - Hábitos completados hoy
 - Total de hábitos
 - Mejor racha lograda
@@ -189,19 +206,20 @@ El proyecto contiene 6 commits organizados y significativos:
 
 ## 🎯 Conceptos Evaluados - Todos Cumplidos
 
-| Concepto | Evidencia |
-|----------|-----------|
-| **HTML Semántico** | `<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`, aria-labels |
-| **CSS Moderno** | Variables CSS, Grid, Flexbox, Media queries, Animaciones |
-| **JavaScript Básico** | Eventos, DOM manipulation, Fetch API, localStorage |
-| **Estructura de Archivos** | Carpetas organizadas, componentes separados, layouts reutilizables |
-| **Git y GitHub** | Commits significativos, mensajes descriptivos, historial limpio |
+| Concepto                   | Evidencia                                                           |
+| -------------------------- | ------------------------------------------------------------------- |
+| **HTML Semántico**         | `<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`, aria-labels |
+| **CSS Moderno**            | Variables CSS, Grid, Flexbox, Media queries, Animaciones            |
+| **JavaScript Básico**      | Eventos, DOM manipulation, Fetch API, localStorage                  |
+| **Estructura de Archivos** | Carpetas organizadas, componentes separados, layouts reutilizables  |
+| **Git y GitHub**           | Commits significativos, mensajes descriptivos, historial limpio     |
 
 ---
 
 ## 🚀 Deploy Listo para Producción
 
 El proyecto está listo para deployer en:
+
 - **Vercel** (recomendado)
 - **Netlify**
 - Cualquier hosting estático
@@ -234,10 +252,10 @@ Ver instrucciones en `DEPLOYMENT.md`
 ## ✨ Resultado Final
 
 Un proyecto completo, moderno y profesional que:
+
 - ✓ Cumple con todos los requisitos
 - ✓ Implementa muchas características extra
 - ✓ Tiene código limpio y organizado
 - ✓ Documentación completa
 - ✓ Listo para producción
 - ✓ Fácil de mantener y extender
-

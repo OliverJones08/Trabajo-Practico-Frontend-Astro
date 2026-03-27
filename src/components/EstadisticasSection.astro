@@ -37,11 +37,36 @@ import BarChart from './BarChart.astro';
 </section>
 
 <script>
+  function getTodayKey() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   function updateStatistics() {
     const stored = localStorage.getItem('habits');
     const habits = stored ? JSON.parse(stored) : [];
+    const todayKey = getTodayKey();
 
-    if (habits.length === 0) {
+    const normalizedHabits = Array.isArray(habits)
+      ? habits.map((habit) => {
+          const completions = Array.isArray(habit.completions)
+            ? habit.completions
+            : habit.completed
+              ? [todayKey]
+              : [];
+
+          return {
+            ...habit,
+            completions,
+            streak: typeof habit.streak === 'number' ? habit.streak : 0
+          };
+        })
+      : [];
+
+    if (normalizedHabits.length === 0) {
       document.getElementById('completed-today').textContent = '0';
       document.getElementById('total-habits').textContent = '0';
       document.getElementById('best-streak').textContent = '0';
@@ -50,19 +75,19 @@ import BarChart from './BarChart.astro';
     }
 
     // Calcular estadísticas
-    const completedToday = habits.filter(h => h.completed).length;
-    const totalHabits = habits.length;
-    const bestStreak = Math.max(...habits.map(h => h.streak), 0);
+    const completedToday = normalizedHabits.filter((h) => h.completions.includes(todayKey)).length;
+    const totalHabits = normalizedHabits.length;
+    const bestStreak = Math.max(...normalizedHabits.map((h) => h.streak), 0);
     const completionRate = Math.round((completedToday / totalHabits) * 100);
 
     // Actualizar valores
-    document.getElementById('completed-today').textContent = completedToday;
-    document.getElementById('total-habits').textContent = totalHabits;
-    document.getElementById('best-streak').textContent = bestStreak;
+    document.getElementById('completed-today').textContent = `${completedToday}`;
+    document.getElementById('total-habits').textContent = `${totalHabits}`;
+    document.getElementById('best-streak').textContent = `${bestStreak}`;
     document.getElementById('completion-rate').textContent = `${completionRate}%`;
 
     // Crear datos para gráfico
-    const chartData = habits.map((habit, index) => ({
+    const chartData = normalizedHabits.map((habit, index) => ({
       label: habit.name.substring(0, 20),
       value: habit.streak,
       color: ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'][index % 5]
@@ -105,15 +130,7 @@ import BarChart from './BarChart.astro';
 
   // Observer para cambios en localStorage
   window.addEventListener('storage', updateStatistics);
-  
-  // Actualizar cada vez que se modifiquen los hábitos
-  const originalSetItem = localStorage.setItem;
-  localStorage.setItem = function(...args) {
-    originalSetItem.apply(this, args);
-    if (args[0] === 'habits') {
-      updateStatistics();
-    }
-  };
+  window.addEventListener('habits:updated', updateStatistics);
 </script>
 
 <style scoped>
